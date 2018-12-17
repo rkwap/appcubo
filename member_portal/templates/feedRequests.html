@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block head_title %}Pending Feed Requests{% endblock %}
+{% load static %}
+{% block content %}
+    <!-- Header -->
+<div class="header mt-md-5">
+    <div class="header-body">
+    
+    <!-- Pretitle -->
+    <h6 class="header-pretitle">
+        Our Platform
+    </h6>
+
+    <!-- Title -->
+    <h1 class="header-title">
+        Pending Feed Requests
+    </h1>
+
+    </div>
+</div>
+<div class="row justify-content">
+{% for feed in pendingFeed %}
+<div class="col-md-4">
+    <div class="card">
+        <div class="card-body text-left">             
+            <h3><a href="{{feed.10.1}}" target="_blank">{{feed.10.0|truncatechars:30}}</a></h3>
+            <h4 class="text-muted"><a href="{{feed.10.3}}" target="_blank">{{feed.10.2|truncatechars:40}}</a></h4>
+            <hr>
+
+            <div class="row">
+                <div class="col-auto">
+                    <img class="avatar-img rounded" src="{{feed.10.5|slice:'0:-3'}}80">
+                </div>
+                <div class="col ml--2 text-right">
+                    {{feed.2|safe}}<br><br>
+                    {% if feed.3 == 'AND' %}
+                    <a href="{{feed.10.1}}" target="_blank"><img src={% static "assets/img/google_play.png" %} height="35"></a>
+                    {% endif %}
+                </div>
+            </div>
+            <hr>
+            
+            <b>{{feed.0}}</b>
+
+
+         </div>
+    </div>
+</div>    
+{% endfor %}
+</div>
+
+{% endblock %}

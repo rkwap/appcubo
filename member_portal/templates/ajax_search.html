@@ -1,0 +1,28 @@
+{% comment %} {% if search.count>0 %} {% endcomment %}
+{% load form_extras %}
+
+
+{% comment %} <img src="{{i.cover|slice:'0:-3'}}30"> {{i.title}} {% endcomment %}
+{% load encryption %}
+{% for x in search %}
+    {% if x.id != 0 %}
+    <br>
+    <div class="row">
+        <div class="text-left">
+            <img src="{{x.icon|slice:'0:-3'}}40">
+        </div>
+        <div class="text-center">
+            <div class="text-left">
+                <a href="{% url 'addfeed' x.id|encode %}">&nbsp;&nbsp;&nbsp;<b>{{ x.title }} - ({{x.id}})</b></a><br>
+                &nbsp;&nbsp;&nbsp;<small>{{ x.publisher }}</small>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+
+{% comment %} {% else %}
+<li>Nothing Found :(</li> {% endcomment %}
+{% comment %} 
+{% endif %} {% endcomment %}

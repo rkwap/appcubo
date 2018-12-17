@@ -8,6 +8,7 @@ scripts
 share
 pyvenv.cfg
 .venv
+venv
 pip-selfcheck.json
 instance/
 config.cfg

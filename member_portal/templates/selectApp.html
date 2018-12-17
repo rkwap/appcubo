@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://intercoolerreleases-leaddynocom.netdna-ssl.com/intercooler-1.1.1.min.js"></script>
+<script>
+
+$(function(){
+
+    $('#search').keyup(function(){
+
+
+
+
+    $.ajax({
+      type:"POST",
+      url:"{% url 'searchApp' %}",
+      data:{
+        'search_text': $('#search').val(),
+        'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
+      },
+      success: searchSuccess,
+      dataType: 'html'
+    });
+  });
+});
+
+function searchSuccess(data, textStatus,jqXHR)
+{
+  $('#search-results').html(data);
+}
+</script>
+{% endblock %}
+
+{% block head_title %}Select App{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+<div class="header mt-md-5">
+    <div class="header-body">
+    
+    <!-- Pretitle -->
+    <h6 class="header-pretitle">
+        Our Platform
+    </h6>
+
+    <!-- Title -->
+    <h1 class="header-title">
+        Select App
+    </h1>
+
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="card col-md-8">
+        <div class="card-body text-center">             
+            <!-- Form -->
+            {% csrf_token %}
+            <h2>Search and select app</h2>
+            <input type ='text' class="form-control" id="search" name="search" autocomplete="off"/>
+            <div id="search-results">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

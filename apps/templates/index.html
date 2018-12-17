@@ -21,7 +21,7 @@
     
     <h1>Search Results for {{q}}</h1>
     {% for info in test %}
-    {{ forloop.counter }}. <a href="{{ info.5 }}"><img src="{{ info.4 }}"></a><a href="{{ info.1 }}">{{ info.0 }}</a> <a href="{{ info.3 }}">({{ info.2 }})</a> <b>{{info.6}}</b> <br>
+    {{ forloop.counter }}. <img src="{{ info.4 }}"><a href="{{ info.1 }}">{{ info.0 }}</a> <a href="{{ info.3 }}">({{ info.2 }})</a> <b>{{info.5}}</b> <br>
     {% endfor %}
     <p>Current scheme: {{ request.scheme }}</p>
  
