@@ -1,99 +1,283 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse
-from .forms import addfeed_form
-from datetime import datetime
-from member_portal.models import feed_requests,feeds
-import hashlib
-from django.views import View   
-from apps.models import android
-import urllib.request, json
-from hashids import Hashids
+from member_portal.models import feed_requests,feeds # Importing member_portal models
+from member_portal.forms import addfeed_form # Importing Forms
+from apps.models import android # Importing appstore models
+from member_portal.decorators import ajax_required # Ajax-requests-only decorator
+from member_portal.templatetags.encryption import encode,decode # For youtube-like encrpytion
+from member_portal.templatetags.essentials import store_ltos,store_stol
+from datetime import datetime # Datetime Library
+import hashlib # Importing hashlib for hashing functions
+from django.views import View
+import urllib.request, json # For handaling json files
+from django.contrib.auth.decorators import login_required # login_required decorator
+from apps.main import app_details,search_app # Importing app_details and search_app function
+from django.core.paginator import Paginator
+from django.urls import reverse
 
-salt = 'This is my salt for test.'
-hashids = Hashids(salt=salt,min_length=11)
+
 
 # Dashboard
+@login_required
 def dashboard(request):
-    return render(request, 'dashboard.html')   
+    return render(request, 'dashboard.html',locals())   
 
-# For selecting app
-def selectApp(request):
-    return render(request,'selectApp.html')
-
-# For adding feed to DB
-def addfeed(request,appid_hash):
-
-    appid = hashids.decode(appid_hash)
-    if appid:
-        appid = str(appid[0])
-        store = 'AND'
-        if request.method == 'POST':
-            form = addfeed_form(request.POST)
-            if form.is_valid():
-                title = str(form.cleaned_data['title'])
-                content = str(form.cleaned_data['content'])
-                category = str(form.cleaned_data['category'])
-                screenshots = str(form.cleaned_data['screenshots'])
-                tags = str(form.cleaned_data['tags'])
-                unique_str = title+'-'+content+'-'+store
-                author = str(request.user)
-                unique_hash = str(hashlib.sha256(unique_str.encode()).hexdigest())
-                feed = feed_requests(
-                    title=title,
-                    appid=appid,
-                    category=category,
-                    store = store,
-                    content = content,
-                    author=author,
-                    sshots = screenshots,
-                    tags = tags,
-                    unique_hash = unique_hash
-                    )
-                feed.save()
-                print(unique_hash)
-                return redirect('dashboard')
-        else:
-            form = addfeed_form()
-
-        # Fetching From app data from appcubo.apps api
-        details_url = "http://127.0.0.1:8000/apps/android/details/"+appid_hash
-        with urllib.request.urlopen(details_url) as url:
-            app = json.loads(url.read().decode())
-        app = dict(app['results'][0])
-        appName = app['title']
-        appURL = app['app_url']
-        publisher = app['publisher']
-        publisherURL = app['publisher_url']
-        price = app['price']
-        icon = app['icon']
-        # end of app data
-
-    else:  # invalid app id selected (invalid url)
-        return redirect('dashboard') 
-    return render(request, 'addfeed.html',locals())
+# For Selecting app
+@login_required
+def selectApp(request,store):
+    if store=='stores':
+        return render(request,'selectStore.html')
+    elif store=='android' or store=='ios':
+        return render(request,'selectApp.html',locals())
+    else:
+        return redirect('/dashboard')
 
 # For Ajax-Search
+@login_required
 def searchApp(request):
 
     if request.method == 'POST':
 
         search_text = request.POST['search_text'].replace(' ','+')
+        store = request.POST.get('store',False)
         print (search_text)
+        print(store)
+        search = search_app(search_text,store)
+        search = search[:5]
+        return render(request,'ajax_search.html',locals())
+    else:
+        return redirect("/dashboard")
 
-        with urllib.request.urlopen("http://127.0.0.1:8000/apps/android/search/"+search_text) as url:
-            search = json.loads(url.read().decode())
+# For Adding/Posting feed (request) to DB (table : feed_requests)
+@login_required
+def addfeed(request,store,appid_hash):
 
-        context={
-        'search':search["results"][:5],
-        }
+    appid = decode(appid_hash)
+    if appid:
+        store = store_ltos(store)
+        if store=='':
+            return redirect('/dashboard')
+        else:
+            if request.method == 'POST':
+                form = addfeed_form(request.POST)
+                if form.is_valid():
+                    title = str(form.cleaned_data['title'])
+                    content = str(form.cleaned_data['content'])
+                    category = str(form.cleaned_data['category'])
+                    screenshots = str(form.cleaned_data['screenshots'])
+                    tags = str(form.cleaned_data['tags'])
+                    unique_str = title+'-'+content+'-'+store
+                    author = str(request.user)
+                    unique_hash = str(hashlib.sha256(unique_str.encode()).hexdigest())
+                    feed = feed_requests(
+                        title=title,
+                        appid=appid,
+                        category=category,
+                        store = store,
+                        content = content,
+                        author=author,
+                        sshots = screenshots,
+                        tags = tags,
+                        unique_hash = unique_hash
+                        )
+                    feed.save()
+                    return redirect('dashboard')
+            else:
+                form = addfeed_form()
 
-        return render(request,'ajax_search.html',context)
+            store=store_stol(store)
+            # Fetching From app data from appcubo.apps api
+            # For APP details along form
+            app = app_details(appid_hash,store) # app_details function
+
+            appName = app['title']
+            appURL = app['appURL']
+            publisher = app['publisher']
+            publisherURL = app['publisherURL']
+            price = app['price']
+            icon = app['icon']
+            # end of app data
+    else:  # invalid app id selected (invalid url)
+        return redirect('dashboard') 
+    return render(request, 'feedAddEdit.html',locals())
 
 # For Pending Feed Requests ( ** For Staff Only ) 
+@login_required
 def feedRequests(request):
+    if request.user.is_staff :
+        # For sorting of feeds
+        store = request.GET.get('store', False)
+        if store:
+            store = store_ltos(store)
+            # Getting feed requests from from DB
+            objs = feed_requests.objects.filter(store__icontains=store).order_by('-id')
+        else:
+            objs = feed_requests.objects.all().order_by('-id')
 
-    # Getting feed requests from from DB
-    objs = feed_requests.objects.all()
+        RequestCount = objs.count()
+
+        paginator = Paginator(objs, 3)
+        page = request.GET.get('page')
+        feedsCount = paginator.get_page(page)
+
+
+        # print(paginator)
+        # Making Lists ready for data
+        title = []
+        appid = []
+        category = []
+        store = []
+        content = []
+        author = []
+        created_at = []
+        screenshots = []
+        tags = []
+        unique_hash = []
+        app_data =[]
+
+        if objs.exists():
+            for feed in objs:
+                    title.append(feed.title)
+                    appid.append(encode(feed.appid))
+                    if feed.category == "NR":
+                        feed.category = '<button class="btn badge-success btn-success btn-sm btn-round">NEW RELEASE</button>'
+                    elif feed.category == "DI":
+                        feed.category = '<button class="btn badge-warning btn-warning btn-sm btn-round">DISCOVER</button>'
+                    elif feed.category == "UP":
+                        feed.category = '<button class="btn badge-info btn-info btn-sm btn-round">UPDATED</button>'
+                    elif feed.category == "BF":
+                        feed.category = '<button class="btn badge-danger btn-danger btn-sm btn-round">BUGS & FIXES</button>'
+                    else:
+                        feed.category = '<button class="btn badge-dark btn-dark btn-sm btn-round">PRICE DROP</button>'
+                    category.append(feed.category)
+                    store.append(feed.store)
+                    content.append(feed.content)
+                    author.append(feed.author)
+                    created_at.append(feed.created_at)
+                    screenshots.append(feed.sshots)
+                    tags.append(feed.tags)
+                    unique_hash.append(feed.unique_hash)
+
+                    feed.store = store_stol(feed.store)
+                    print(feed.store)
+                    # Getting app data
+                    app = app_details(encode(feed.appid),feed.store) # app_details function
+
+                    app_data_temp = [app['title'],app['appURL'],app['publisher'],app['publisherURL'],app['price'],app['icon']]
+                    app_data.append(app_data_temp)
+                    # end of app data
+        pendingFeed = list(zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data))
+
+        return render(request,'feedRequests.html',locals())
+    else:
+        return redirect('dashboard')
+
+# For Reviewing the pending feed request ( ** For Staff Only)
+@login_required
+def pendingReview(request):
+    if request.user.is_staff :
+        if request.method == 'POST':
+            # if post request made from feedRequests
+            if 'review' in request.POST:
+                unique_hash = str(request.POST.get('key', False))
+                appid_hash = str(request.POST.get('appid', False))
+
+                # Fetching requested feed data from DB
+                obj = feed_requests.objects.filter(unique_hash=unique_hash)
+                title = obj[0].title
+                category = obj[0].category
+                content = obj[0].content
+                author = obj[0].author
+                sshots = obj[0].sshots
+                tags = obj[0].tags
+                store = obj[0].store
+                created_at = obj[0].created_at
+                # end of feed data
+                store = store_stol(store)
+                # Fetching From app data from appcubo.apps api
+                app = app_details(appid_hash,store)
+                appName = app['title']
+                appURL = app['appURL']
+                publisher = app['publisher']
+                publisherURL = app['publisherURL']
+                price = app['price']
+                icon = app['icon']
+                # end of app data
+                pending = True
+                form = addfeed_form(initial={'title': title, 'category' : category, 'content' : content, 'screenshots' : sshots, 'tags' : tags})
+
+            # if post request made by submitting the feed
+            # (Accept Feed)
+            elif 'acceptFeed' in request.POST:
+
+                form = addfeed_form(request.POST)
+                if form.is_valid():
+                    title = str(form.cleaned_data['title'])
+                    content = str(form.cleaned_data['content'])
+                    category = str(form.cleaned_data['category'])
+                    screenshots = str(form.cleaned_data['screenshots'])
+                    tags = str(form.cleaned_data['tags'])
+                    author = str(request.POST.get('author', False))
+                    unique_hash = str(request.POST.get('key', False)) 
+                    store = str(request.POST.get('store', False))
+                    appid_hash = str(request.POST.get('appid_hash', False))
+                    appid = decode(appid_hash)
+
+                    # Saving the object in feeds tables
+                    feed = feeds(
+                        title=title,
+                        appid=appid,
+                        category=category,
+                        store = store,
+                        content = content,
+                        author=author,
+                        sshots = screenshots,
+                        tags = tags,
+                        unique_hash = unique_hash
+                        )
+                    feed.save()
+
+                    # Delete Object from feed_requests table
+                    feed_requests.objects.filter(unique_hash=unique_hash).delete()
+
+                    return redirect('feedRequests')
+            elif 'rejectFeed' in request.POST:
+                unique_hash = str(request.POST.get('key', False))
+                # Delete Object from feed_requests table
+                feed_requests.objects.filter(unique_hash=unique_hash).delete()
+                return redirect('feedRequests')
+                
+            else:
+                return redirect('feedRequests')
+                
+
+            return render(request,'feedAddEdit.html',locals())
+    else:
+        return redirect('dashboard')
+
+    return render(request,'feedAddEdit.html',locals())
+
+# For user feeds
+@login_required
+def userFeeds(request):
+    
+    # For sorting of feeds
+    store = request.GET.get('store', False)
+    if store:
+        store = store_ltos(store)
+        # Getting feed requests from from DB
+        objs = feeds.objects.filter(store__icontains=store).order_by('-id')
+    else:
+        objs = feeds.objects.all().order_by('-id')
+
+    RequestCount = objs.count()
+
+    paginator = Paginator(objs, 3)
+    page = request.GET.get('page')
+    feedsCount = paginator.get_page(page)
+
+
+    # print(paginator)
     # Making Lists ready for data
     title = []
     appid = []
@@ -110,17 +294,17 @@ def feedRequests(request):
     if objs.exists():
         for feed in objs:
                 title.append(feed.title)
-                appid.append(feed.appid)
+                appid.append(encode(feed.appid))
                 if feed.category == "NR":
-                    feed.category = '<button class="btn badge-soft-success btn-success btn-sm btn-round">NEW RELEASE</button>'
+                    feed.category = '<button class="btn badge-success btn-success btn-sm btn-round">NEW RELEASE</button>'
                 elif feed.category == "DI":
-                    feed.category = '<button class="btn badge-soft-warning btn-warning btn-sm btn-round">DISCOVER</button>'
+                    feed.category = '<button class="btn badge-warning btn-warning btn-sm btn-round">DISCOVER</button>'
                 elif feed.category == "UP":
-                    feed.category = '<button class="btn badge-soft-info btn-info btn-sm btn-round">UPDATED</button>'
+                    feed.category = '<button class="btn badge-info btn-info btn-sm btn-round">UPDATED</button>'
                 elif feed.category == "BF":
-                    feed.category = '<button class="btn badge-soft-danger btn-danger btn-sm btn-round">BUGS & FIXES</button>'
+                    feed.category = '<button class="btn badge-danger btn-danger btn-sm btn-round">BUGS & FIXES</button>'
                 else:
-                    feed.category = '<button class="btn badge-soft-dark btn-dark btn-sm btn-round">PRICE DROP</button>'
+                    feed.category = '<button class="btn badge-dark btn-dark btn-sm btn-round">PRICE DROP</button>'
                 category.append(feed.category)
                 store.append(feed.store)
                 content.append(feed.content)
@@ -129,14 +313,17 @@ def feedRequests(request):
                 screenshots.append(feed.sshots)
                 tags.append(feed.tags)
                 unique_hash.append(feed.unique_hash)
-                # Fetching From app data from appcubo.apps api
-                details_url = "http://127.0.0.1:8000/apps/android/details/"+hashids.encode(feed.appid)
-                with urllib.request.urlopen(details_url) as url:
-                    app = json.loads(url.read().decode())
-                app = dict(app['results'][0])
-                app_data_temp = [app['title'],app['app_url'],app['publisher'],app['publisher_url'],app['price'],app['icon']]
+
+                feed.store = store_stol(feed.store)
+                print(feed.store)
+                # Getting app data
+                app = app_details(encode(feed.appid),feed.store) # app_details function
+
+                app_data_temp = [app['title'],app['appURL'],app['publisher'],app['publisherURL'],app['price'],app['icon']]
                 app_data.append(app_data_temp)
                 # end of app data
-    pendingFeed = zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data)
+    pendingFeed = list(zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data))
 
     return render(request,'feedRequests.html',locals())
+
+

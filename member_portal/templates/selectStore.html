@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block head_title %}Select a Store{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+<div class="header mt-md-5">
+    <div class="header-body">
+    
+    <!-- Pretitle -->
+    <h6 class="header-pretitle">
+        Our Platform
+    </h6>
+
+    <!-- Title -->
+    <h1 class="header-title">
+        Select Store
+    </h1>
+
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="card col-md-3">
+        <div class="card-body text-center">             
+            <a href="{% url 'selectApp' 'android'%}">
+            <img src="https://vignette.wikia.nocookie.net/google/images/2/24/Play_Store.png/revision/latest?cb=20170731120010" height="100">
+            </a>
+        </div>
+    </div>
+    <div class="col-md-1"></div>
+    <div class="card col-md-3">
+        <div class="card-body text-center">             
+            <h2><a href="{% url 'selectApp' 'ios'%}">
+            <img src="https://support.apple.com/library/content/dam/edam/applecare/images/en_US/social/thumbnail/ios11-app-store-icon_2x.png" height="100">
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

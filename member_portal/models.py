@@ -21,7 +21,7 @@ STORE_CHOICES = (
     ("MAC", "Mac OS"),
 )
 class feeds(models.Model):
-    title = models.CharField(max_length=255,default=None,unique=True)
+    title = models.CharField(max_length=255,default=None)
     appid = models.BigIntegerField(default=None)
     category = models.CharField(max_length=2,choices=CATEGORY_CHOICES,default=None)
     store = models.CharField(max_length=3,choices=STORE_CHOICES,default=None)
@@ -40,7 +40,7 @@ class feeds(models.Model):
     unique_hash = models.CharField(max_length=255,unique=True,default=None)
 
 class feed_requests(models.Model):
-    title = models.CharField(max_length=255,default=None,unique=True)
+    title = models.CharField(max_length=255,default=None)
     appid = models.BigIntegerField(default=None)
     category = models.CharField(max_length=2,choices=CATEGORY_CHOICES,default=None)
     store = models.CharField(max_length=3,choices=STORE_CHOICES,default=None)

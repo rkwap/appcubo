@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block head_title %}Pending Feed Requests{% endblock %}
 {% load static %}
+{% load dashboard %}
+{% load essentials %}
 {% block content %}
+{% load pagination_tags %}
     <!-- Header -->
 <div class="header mt-md-5">
     <div class="header-body">
@@ -13,12 +16,13 @@
 
     <!-- Title -->
     <h1 class="header-title">
-        Pending Feed Requests
+        Pending Feed Requests ({{RequestCount}})
     </h1>
 
     </div>
 </div>
 <div class="row justify-content">
+{% autopaginate pendingFeed 6 %}
 {% for feed in pendingFeed %}
 <div class="col-md-4">
     <div class="card">
@@ -29,24 +33,54 @@
 
             <div class="row">
                 <div class="col-auto">
-                    <img class="avatar-img rounded" src="{{feed.10.5|slice:'0:-3'}}80">
+                    {% if feed.3 == 'AND' %}
+                        <img class="rounded" src="{{feed.10.5|slice:'0:-3'}}80">
+                    {% else %}
+                        <img class="rounded" src="{{feed.10.5}}" height="80">
+                    {% endif %}
                 </div>
                 <div class="col ml--2 text-right">
                     {{feed.2|safe}}<br><br>
-                    {% if feed.3 == 'AND' %}
-                    <a href="{{feed.10.1}}" target="_blank"><img src={% static "assets/img/google_play.png" %} height="35"></a>
-                    {% endif %}
+                    
+                    <a href="{{feed.10.1}}" target="_blank">
+                    {% with feed.3|store_stol as store %}
+                    {% with "assets/img/"|add:store|add:".png" as img_url %}
+                    <img src="{% static img_url%}" height="35">
+                    {% endwith %}
+                    {% endwith %}
+                    </a>
                 </div>
             </div>
             <hr>
-            
-            <b>{{feed.0}}</b>
+            <div class="row">
+                <div class="col auto text-left">
+                    <h3><u>{{feed.0|truncatechars:28}}</u></h3>
+                    <h4 class="text-muted">@{{feed.5}}</h4>
+                    <h5 class="text-muted">{{feed.6|timesince}} ago</h5>
+                </div>
+            </div>
 
+            <form method="POST" action="{% url 'pendingReview' %}">
+                {% csrf_token %}
+                <input name="key" value="{{feed.9}}" hidden>
+                <input name="appid" value="{{feed.1}}" hidden><br>
+                <div class="row">
+                    <div class="col auto text-left">
+                        <button type="submit" name="review" value="review" class="btn btn-secondary btn-sm btn-round"><span class="fe fe-thumbs-up"></span> Review</button>
+                    </div>
+                    <div class="col auto text-right">
+                        <button type="submit" name="rejectFeed" value= "rejectFeed" class="btn btn-danger btn-sm btn-round"><span class="fe fe-trash"></span></button>
+                    </div>
+                </div>
+            </form>
 
          </div>
     </div>
 </div>    
 {% endfor %}
 </div>
+
+{% paginate using "pagination.html" %}
+
 
 {% endblock %}

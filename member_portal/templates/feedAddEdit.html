@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+{% load essentials %}
+{% block head_title %}
+Add Feed
+{% endblock %}
+
+{% block content %}
+    <!-- Header -->
+<div class="header mt-md-5">
+    <div class="header-body">
+    <!-- Title -->
+    {% if pending is not none %}
+    <h1 class="header-title">
+        Review Feed : {{title}}
+    </h1><br>
+    <h4 class="text-muted">{{created_at|timesince}} ago  ({{created_at}})</h4>
+    {% else %}
+    <h1 class="header-title">
+        Add Feed
+    </h1>
+    {% endif %}
+
+    </div>
+</div>
+<div class="row">
+    <div class="justify-content col-md-6">
+        <div class="card">
+            <div class="card-body text-left">
+            {% if pending is not none %}
+            <h2>Author : {{author}}</h2><br>
+            {% endif %}
+                <!-- Form -->
+                <form method="POST" class="post-form">
+                    {% csrf_token %}
+                    {{form.as_p}}
+
+                    {% if pending is not none %}
+                        <input name="store" value="{{store|store_ltos}}" hidden> 
+                        <input name="author" value="{{author}}" hidden>
+                        <input name="key" value="{{unique_hash}}" hidden>
+                        <input name="appid_hash" value="{{appid_hash}}" hidden>
+                    {% endif %}
+
+
+                    {% if pending is none %}
+                        <button type="submit" class="save btn btn-primary">Submit</button>
+                    {% else %}
+                        <div class="row">
+                            <div class="col auto text-left">
+                                <button type="submit" name="acceptFeed" value="acceptFeed" class="save btn btn-success">Accept</button>
+                            </div>
+                            <div class="col auto text-right">
+                                <button type="submit" name="rejectFeed" value="rejectFeed" class="save btn btn-danger">Reject</button>
+                            </div>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <div class="justify-content col-md-6">
+        <div class="card">
+            <div class="card-body text-left">
+                <div class="row">
+                    <div class="col-auto">
+                        <a href="{{appURL}}" style="color: inherit;" target="_blank">
+                        {% if store == 'android' %}
+                        <img class="rounded" src="{{icon|slice:'0:-3'}}160">
+                        {% else %}
+                        <img class="rounded" src="{{icon}}" height="160">
+                        {% endif %}
+                        </a>
+                    </div>
+                    
+                    <div class="col ml--1">
+                        <a href="{{appURL}}" style="color: inherit;" target="_blank"><h2>{{appName}}</h2></a>
+                        <a href="{{publisherURL}}" target="_blank"><h4>{{publisher}}<h4></a>
+                        {{price}}<br><br>
+
+                        <a href="{{appURL}}" target="_blank">
+                        {% with "assets/img/"|add:store|add:".png" as url %}
+                        <img src={% static url %} height="50">
+                        {% endwith %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <hr>
+        <h2> &nbsp;Recent Feeds </h2>
+        <div class="card">
+            <div class="card-body text-left">
+               <p> No feeds founds.<br>
+                    Submit this as the first feed for this app.</p>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+{% endblock %}

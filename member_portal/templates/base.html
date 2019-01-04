@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="A fully featured admin theme which can be used to build CRM, CMS, etc.">
     {% load static %}
+    {% load dashboard %}
     <!-- Libs CSS -->
     <link rel="stylesheet" href={% static "assets/fonts/feather/feather.min.css" %}>
     <link rel="stylesheet" href={% static "assets/libs/highlight.js/styles/vs2015.css" %}>
@@ -18,8 +19,14 @@
     <link rel="stylesheet" href={% static "assets/css/theme-dark.min.css" %} id="stylesheetDark">
     <style>body { display: none; }</style>
     <script>
-      var colorScheme = ( localStorage.getItem('dashkitColorScheme') ) ? localStorage.getItem('dashkitColorScheme') : 'light';
+      var colorScheme = ( localStorage.getItem('dashkitColorScheme') ) ? localStorage.getItem('dashkitColorScheme') : 'dark';
     </script>
+    <style>
+    .rounded {
+        border: 0px solid transparent;
+        border-radius: 40px;
+    }
+    </style>
     <title>{% block head_title %}{% endblock %}</title>
     {% block extra_head %}
     {% endblock %}
@@ -861,15 +868,21 @@
                 <div class="collapse show" id="sidebarDashboards">
                   <ul class="nav nav-sm flex-column">
                     <li class="nav-item">
-                      <a href="{% url 'selectapp' %}" class="nav-link">
-                      {% comment %} <a href="{% url 'addfeed' 'post' %}" class="nav-link active"> {% endcomment %}
+                      <a href="{% url 'selectApp' 'stores'%}" class="nav-link">
                         <i class="fe fe-plus"></i> Add Feed
+                      </a>
+                    </li>
+                    <li class="nav-item">
+                      <a href="{% url 'userFeeds'%}" class="nav-link">
+                        <i class="fe fe-user-plus"></i> My Feeds
+                        <span class="badge badge-success ml-auto">{{user.get_username|myf_count}}</span>
                       </a>
                     </li>
                       {% if user.is_staff %}
                       <li class="nav-item">
                       <a href="{% url 'feedRequests' %}" class="nav-link">
                         <i class="fe fe-refresh-ccw"></i> Feed Requests
+                        <span class="badge badge-warning ml-auto">{{dashboard|fr_count}}</span>
                       </a>
                       </li>
                       {% endif %}
@@ -1500,10 +1513,10 @@
                       Add Feeds
                     </a>
                   </li>
-                  <li>
-                    <a class="dropdown-item " href="dashboard-alt.html">
-                      Alternative
-                    </a>
+                  <li class="nav-item">
+                      <a href="{% url 'userFeeds'%}" class="dropdown-item active">
+                        <i class="fe fe-user-plus"></i> My Feeds
+                      </a>
                   </li>
                 </ul>
               </li>

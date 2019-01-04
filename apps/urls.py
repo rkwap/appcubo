@@ -1,11 +1,12 @@
 from django.urls import path, include
-from apps import views
-
+from apps import android,ios
+from apps.android import search,details # for class based view
+from apps.ios import apps
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('api/', views.api, name='api'),
-    path('android/search/<str:q>/', views.play, name='playAppSearch'),
-    path('android/details/<str:playid>/', views.playAppDetails, name='playAppDetails')
+    path('android/search/<str:q>/', search.as_view(),name='playAppSearch'), # for class based views
+    path('android/details/<str:playid>/', details.as_view(),name='playAppDetails'), # for class based views
+    path('ios/<str:q>/', apps.as_view(), name='iOSApps'), # for class based views
+
 
 ]

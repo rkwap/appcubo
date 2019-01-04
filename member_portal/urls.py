@@ -4,9 +4,12 @@ from member_portal import feeds
 urlpatterns = [
     path('accounts/', include('allauth.urls')), # for accounts
     path('dashboard/', feeds.dashboard , name='dashboard'), # dashboard
-    path('addfeed/<str:appid_hash>/post/', feeds.addfeed , name='addfeed'), # posting feed in addfeed
-    path('addfeed/selectapp/', feeds.selectApp , name='selectapp'), # selecting app
+    path('addfeed/<str:store>/<str:appid_hash>/post/', feeds.addfeed , name='addfeed'), # posting feed in addfeed
+    path('addfeed/selectapp/<str:store>/', feeds.selectApp , name='selectApp'), # selecting app
     path('addfeed/search', feeds.searchApp , name='searchApp'), #render ajax_search.html
-    path('feedrequests/', feeds.feedRequests , name='feedRequests')
+    path('feedrequests/', feeds.feedRequests , name='feedRequests'),
+    path('feedrequests/review/', feeds.pendingReview , name='pendingReview'),
+    path('myfeeds/', feeds.userFeeds , name='userFeeds')
+
 
 ]

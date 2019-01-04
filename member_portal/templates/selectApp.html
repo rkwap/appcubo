@@ -14,9 +14,11 @@ $(function(){
 
     $.ajax({
       type:"POST",
+      dataType: "json",
       url:"{% url 'searchApp' %}",
       data:{
         'search_text': $('#search').val(),
+        'store' : '{{store}}',
         'csrfmiddlewaretoken' : $("input[name=csrfmiddlewaretoken]").val()
       },
       success: searchSuccess,

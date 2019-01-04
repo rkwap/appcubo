@@ -9,11 +9,15 @@
     <br>
     <div class="row">
         <div class="text-left">
+            {% if store == 'android' %}
             <img src="{{x.icon|slice:'0:-3'}}40">
+            {% else %}
+            <img src="{{x.icon}}" height="50">
+            {% endif %}
         </div>
         <div class="text-center">
             <div class="text-left">
-                <a href="{% url 'addfeed' x.id|encode %}">&nbsp;&nbsp;&nbsp;<b>{{ x.title }} - ({{x.id}})</b></a><br>
+                <a href="{% url 'addfeed' store x.id%}">&nbsp;&nbsp;&nbsp;<b>{{ x.title }} - ({{x.id|decode}})</b></a><br>
                 &nbsp;&nbsp;&nbsp;<small>{{ x.publisher }}</small>
             </div>
         </div>

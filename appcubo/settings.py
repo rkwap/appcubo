@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
     'mathfilters',
+    'dj_pagination',
+    'rest_framework',
     # Custom Apps
     'apps',
     'member_portal',
@@ -58,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'dj_pagination.middleware.PaginationMiddleware',
 ]
 
 ROOT_URLCONF = 'appcubo.urls'
@@ -73,7 +76,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-
                 'django.template.context_processors.request',
             ],
         },
@@ -88,16 +90,12 @@ WSGI_APPLICATION = 'appcubo.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
-        'USER': 'root',
-        'PASSWORD': '',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'appcubo',
+        'USER': 'postgres',
+        'PASSWORD': '8608',
         'HOST': 'localhost',
-        'PORT': '',
-        'OPTIONS': {
-            'init_command': 'SET default_storage_engine=INNODB',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
+        'PORT': '5432',
     }
 }
 
@@ -147,5 +145,25 @@ AUTHENTICATION_BACKENDS = (
 )
 
 SITE_ID = 1
-
 LOGIN_REDIRECT_URL = 'dashboard'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
+    'DEFAULT_PARSER_CLASSES': (
+        'rest_framework.parsers.JSONParser',
+    )
+}
+
+
+ALLOWED_HOSTS = ['192.168.43.122', 'localhost', '127.0.0.1']
