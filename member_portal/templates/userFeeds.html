@@ -1,9 +1,11 @@
 {% extends "base.html" %}
-{% block head_title %}Pending Feed Requests{% endblock %}
+{% block head_title %}My Feeds{% endblock %}
 {% load static %}
 {% load dashboard %}
-{% load encryption %}
 {% load essentials %}
+{% block body_top %}
+             
+{% endblock %}
 {% block content %}
 {% load pagination_tags %}
     <!-- Header -->
@@ -17,14 +19,14 @@
 
     <!-- Title -->
     <h1 class="header-title">
-        Pending Feed Requests ({{RequestCount}})
+        My Feeds ({{feedCount}})
     </h1>
 
     </div>
 </div>
 <div class="row justify-content">
-{% autopaginate pendingFeed 6 %}
-{% for feed in pendingFeed %}
+{% autopaginate myFeed 6 %}
+{% for feed in myFeed %}
 <div class="col-md-4">
     <div class="card">
         <div class="card-body text-left">             
@@ -56,20 +58,30 @@
             <div class="row">
                 <div class="col auto text-left">
                     <h3><u>{{feed.0|truncatechars:28}}</u></h3>
-                    <h4 class="text-muted">@{{feed.5}}</h4>
+                    <h4 class="text-muted">{{feed.4|safe|truncatechars:80}}</h4>
                     <h5 class="text-muted">{{feed.6|timesince}} ago</h5>
                 </div>
             </div>
-
-            <form method="POST" action="{% url 'pendingReview' %}">
+            <form method="POST" action="{% url 'editFeed' %}"> 
                 {% csrf_token %}
-                <input name="key" value="{{feed.9}}" hidden>
                 <input name="appid" value="{{feed.1}}" hidden><br>
+                <input name="feed_id" value="{{feed.11}}" hidden><br>
                 <div class="row">
                     <div class="col auto text-left">
-                        <button type="submit" name="review" value="review" class="btn btn-secondary btn-sm btn-round"><span class="fe fe-thumbs-up"></span> Review</button>
+                    <div class="row">
+                        <div class="col-auto">
+                            <h5 class="text-muted"><span class="fe fe-thumbs-up text-success"></span> : {{feed.12}}<br><br>
+                            <span class="fe fe-thumbs-down text-danger"></span> : {{feed.13}}</h5>
+                        </div>
+                        <div class="col-auto text-center">
+                            <h5 class="text-muted"><br><span class="fe fe-align-center text-warning"></span> : {{feed.14}}</h5>
+                        </div>
+                    </div>    
                     </div>
+
                     <div class="col auto text-right">
+                        <button type="submit" name="editFeed" value="edit" style="color: white;" class="btn btn-warning btn-sm btn-round"><span class="fe fe-edit-2"></span></button>
+                        
                         <a class="btn btn-danger btn-sm btn-round" style="color: white;" data-toggle="modal" data-target="#{{feed.11}}"><span class="fe fe-trash"></span></a>
                         <!-- Delete feed Confirmation Modal -->
                         <div class="modal fade" id="{{feed.11}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -86,17 +98,16 @@
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-                                        <button type="submit" name="rejectFeed" value= "rejectFeed" class="btn btn-primary">Yes, I am sure!</button>
+                                        <button type="submit" name="rejectFeed" value="delete" class="btn btn-primary">Yes, I am sure!</button>
                                     </div>
                                 </div>
                             </div>
                         </div>  
-                    
-                    
+
+
                     </div>
                 </div>
             </form>
-
          </div>
     </div>
 </div>    

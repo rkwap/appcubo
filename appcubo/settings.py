@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     # Custom Apps
     'apps',
     'member_portal',
+    'ckeditor',
+    'ckeditor_uploader',
     # Authentication apps
     'allauth',
     'allauth.account',
@@ -166,4 +168,46 @@ REST_FRAMEWORK = {
 }
 
 
-ALLOWED_HOSTS = ['192.168.43.122', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.43.122', '192.168.137.165','localhost', '127.0.0.1']
+
+
+####################################
+    ##  CKEDITOR CONFIGURATION ##
+####################################
+ 
+CKEDITOR_JQUERY_URL = 'https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js'
+ 
+CKEDITOR_UPLOAD_PATH = 'uploads/'
+CKEDITOR_IMAGE_BACKEND = "pillow"
+ 
+CKEDITOR_CONFIGS = {
+    'default': {
+        'height': "300",
+        'width': "auto",
+        'toolbarGroups': [{ 'name': 'document', 'groups': [ 'mode', 'document', 'doctools' ] }],
+        'toolbar': [
+                ["Format", 'Font', 'FontSize', "cmsplugins", "-", "ShowBlocks", "Bold", "Italic", "Underline", "Strike", "SpellChecker",'Blockquote','HorizontalRule', 'Smiley','SpecialChar','TextColor', 'BGColor'],
+                ['NumberedList', 'BulletedList', "Indent", "Outdent", 'JustifyLeft', 'JustifyCenter',
+                 'JustifyRight', 'JustifyBlock'],
+                ["Image", "Table", "Link", "Unlink", "Anchor", "SectionLink", "Subscript", "Superscript"], ['Undo', 'Redo'], ["Source"],
+                ],
+
+        'toolbar_CMS': [
+        ['Undo', 'Redo'],
+        ['devtools'],
+        ['cmsplugins', '-', 'ShowBlocks'],
+        ['Format', 'Styles'],
+        ['TextColor', 'BGColor', '-', 'PasteText', 'PasteFromWord'],
+        ['Maximize', ''],
+        '/',
+        ['Bold', 'Italic', 'Underline', '-', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
+        ['JustifyLeft', 'JustifyCenter', 'JustifyRight'],
+        ['HorizontalRule'],
+        ['Link', 'Unlink'],
+        ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Table', 'Blockquote'],
+        ['Source'],
+    ],
+    },
+}
+ 
+###################################

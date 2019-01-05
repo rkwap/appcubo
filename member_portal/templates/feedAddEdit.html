@@ -6,6 +6,7 @@ Add Feed
 {% endblock %}
 
 {% block content %}
+
     <!-- Header -->
 <div class="header mt-md-5">
     <div class="header-body">
@@ -15,7 +16,23 @@ Add Feed
         Review Feed : {{title}}
     </h1><br>
     <h4 class="text-muted">{{created_at|timesince}} ago  ({{created_at}})</h4>
-    {% else %}
+    {% elif edit %}
+    <h1 class="header-title">
+        Edit Feed : {{title}}
+    </h1><br>
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Created At: </h4>
+            <h5 class="text-muted">{{created_at|timesince}} ago  ({{created_at}})</h5>
+        </div>
+            {% if updated_at %}
+                <div class="col-md-6">
+                    <h4>Updated At: </h4>
+                    <h5 class="text-muted">{{updated_at|timesince}} ago  ({{updated_at}})</h5>
+                </div>
+            {% endif %}
+    </div>
+    {% else%}
     <h1 class="header-title">
         Add Feed
     </h1>
@@ -33,19 +50,21 @@ Add Feed
                 <!-- Form -->
                 <form method="POST" class="post-form">
                     {% csrf_token %}
-                    {{form.as_p}}
+                    {{ form.media }}
+                    {{ form.as_p }}
 
                     {% if pending is not none %}
                         <input name="store" value="{{store|store_ltos}}" hidden> 
                         <input name="author" value="{{author}}" hidden>
                         <input name="key" value="{{unique_hash}}" hidden>
                         <input name="appid_hash" value="{{appid_hash}}" hidden>
+                    {% elif edit %}
+                        <input name="feed_id" value="{{feed_id_hashed}}" hidden>
+                    {% else %}
                     {% endif %}
 
 
-                    {% if pending is none %}
-                        <button type="submit" class="save btn btn-primary">Submit</button>
-                    {% else %}
+                    {% if pending or edit %}
                         <div class="row">
                             <div class="col auto text-left">
                                 <button type="submit" name="acceptFeed" value="acceptFeed" class="save btn btn-success">Accept</button>
@@ -54,6 +73,8 @@ Add Feed
                                 <button type="submit" name="rejectFeed" value="rejectFeed" class="save btn btn-danger">Reject</button>
                             </div>
                         </div>
+                    {% else %}
+                        <button type="submit" class="save btn btn-primary">Submit</button>
                     {% endif %}
                 </form>
             </div>

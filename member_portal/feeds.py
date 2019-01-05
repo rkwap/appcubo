@@ -4,12 +4,13 @@ from member_portal.models import feed_requests,feeds # Importing member_portal m
 from member_portal.forms import addfeed_form # Importing Forms
 from apps.models import android # Importing appstore models
 from member_portal.decorators import ajax_required # Ajax-requests-only decorator
-from member_portal.templatetags.encryption import encode,decode # For youtube-like encrpytion
+from member_portal.templatetags.encryption import encode,decode,encode_alpha,decode_alpha # For youtube-like encrpytion
 from member_portal.templatetags.essentials import store_ltos,store_stol
 from datetime import datetime # Datetime Library
 import hashlib # Importing hashlib for hashing functions
 from django.views import View
 import urllib.request, json # For handaling json files
+from django.db.models import Q # Django Q objects for query
 from django.contrib.auth.decorators import login_required # login_required decorator
 from apps.main import app_details,search_app # Importing app_details and search_app function
 from django.core.paginator import Paginator
@@ -69,17 +70,30 @@ def addfeed(request,store,appid_hash):
                     unique_str = title+'-'+content+'-'+store
                     author = str(request.user)
                     unique_hash = str(hashlib.sha256(unique_str.encode()).hexdigest())
-                    feed = feed_requests(
-                        title=title,
-                        appid=appid,
-                        category=category,
-                        store = store,
-                        content = content,
-                        author=author,
-                        sshots = screenshots,
-                        tags = tags,
-                        unique_hash = unique_hash
+                    if request.user.is_staff :
+                        feed = feeds(
+                            title=title,
+                            appid=appid,
+                            category=category,
+                            store = store,
+                            content = content,
+                            author=author,
+                            sshots = screenshots,
+                            tags = tags,
+                            unique_hash = unique_hash
                         )
+                    else:    
+                        feed = feed_requests(
+                            title=title,
+                            appid=appid,
+                            category=category,
+                            store = store,
+                            content = content,
+                            author=author,
+                            sshots = screenshots,
+                            tags = tags,
+                            unique_hash = unique_hash
+                            )
                     feed.save()
                     return redirect('dashboard')
             else:
@@ -120,8 +134,6 @@ def feedRequests(request):
         page = request.GET.get('page')
         feedsCount = paginator.get_page(page)
 
-
-        # print(paginator)
         # Making Lists ready for data
         title = []
         appid = []
@@ -134,6 +146,7 @@ def feedRequests(request):
         tags = []
         unique_hash = []
         app_data =[]
+        feed_id=[]
 
         if objs.exists():
             for feed in objs:
@@ -157,16 +170,15 @@ def feedRequests(request):
                     screenshots.append(feed.sshots)
                     tags.append(feed.tags)
                     unique_hash.append(feed.unique_hash)
-
+                    feed_id.append(encode_alpha(feed.id))
+                    print(feed_id)
                     feed.store = store_stol(feed.store)
-                    print(feed.store)
                     # Getting app data
                     app = app_details(encode(feed.appid),feed.store) # app_details function
-
                     app_data_temp = [app['title'],app['appURL'],app['publisher'],app['publisherURL'],app['price'],app['icon']]
                     app_data.append(app_data_temp)
                     # end of app data
-        pendingFeed = list(zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data))
+        pendingFeed = list(zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data,feed_id))
 
         return render(request,'feedRequests.html',locals())
     else:
@@ -266,11 +278,11 @@ def userFeeds(request):
     if store:
         store = store_ltos(store)
         # Getting feed requests from from DB
-        objs = feeds.objects.filter(store__icontains=store).order_by('-id')
+        objs = feeds.objects.filter(Q(store__icontains=store) & Q(author=str(request.user))).order_by('-id')
     else:
-        objs = feeds.objects.all().order_by('-id')
+        objs = feeds.objects.filter(author=str(request.user)).order_by('-id')
 
-    RequestCount = objs.count()
+    feedCount = objs.count()
 
     paginator = Paginator(objs, 3)
     page = request.GET.get('page')
@@ -286,10 +298,15 @@ def userFeeds(request):
     content = []
     author = []
     created_at = []
+    updated_at = []
     screenshots = []
     tags = []
     unique_hash = []
     app_data =[]
+    feed_id=[]
+    upvote_count = []
+    downvote_count = []
+    comment_count = []
 
     if objs.exists():
         for feed in objs:
@@ -313,17 +330,93 @@ def userFeeds(request):
                 screenshots.append(feed.sshots)
                 tags.append(feed.tags)
                 unique_hash.append(feed.unique_hash)
-
+                feed_id.append(encode_alpha(feed.id))
                 feed.store = store_stol(feed.store)
-                print(feed.store)
+                if feed.upvote_count is None:
+                    feed.upvote_count='0'
+                if feed.downvote_count is None:
+                    feed.downvote_count = '0'
+                if feed.comment_count is None:
+                    feed.comment_count = '0'
+                
+                upvote_count.append(feed.upvote_count)
+                downvote_count.append(feed.downvote_count)
+                comment_count.append(feed.comment_count)
                 # Getting app data
                 app = app_details(encode(feed.appid),feed.store) # app_details function
 
                 app_data_temp = [app['title'],app['appURL'],app['publisher'],app['publisherURL'],app['price'],app['icon']]
                 app_data.append(app_data_temp)
                 # end of app data
-    pendingFeed = list(zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data))
+    myFeed = list(zip(title,appid,category,store,content,author,created_at,screenshots,tags,unique_hash,app_data,feed_id,upvote_count,downvote_count,comment_count))
 
-    return render(request,'feedRequests.html',locals())
+    return render(request,'userFeeds.html',locals())
 
+@login_required
+def editFeed(request):
+    if request.method == 'POST':
+        # if post request made from feedRequests
+        if 'editFeed' in request.POST:
+            appid_hash = str(request.POST.get('appid', False))
+            feed_id_hashed = str(request.POST.get('feed_id', False))
+            feed_id = decode_alpha(feed_id_hashed)
+            # Fetching requested feed data from DB
+            obj = feeds.objects.filter(id=feed_id)
+            title = obj[0].title
+            category = obj[0].category
+            content = obj[0].content
+            author = obj[0].author
+            sshots = obj[0].sshots
+            tags = obj[0].tags
+            store = obj[0].store
+            created_at = obj[0].created_at
+            updated_at = obj[0].updated_at
+            # end of feed data
+            store = store_stol(store)
+            # Fetching From app data from appcubo.apps api
+            app = app_details(appid_hash,store)
+            appName = app['title']
+            appURL = app['appURL']
+            publisher = app['publisher']
+            publisherURL = app['publisherURL']
+            price = app['price']
+            icon = app['icon']
+            # end of app data
+            edit = True
+            form = addfeed_form(initial={'title': title, 'category' : category, 'content' : content, 'screenshots' : sshots, 'tags' : tags})
+
+        # if post request made by submitting the feed
+        # (Accept Feed)
+        elif 'acceptFeed' in request.POST:
+            form = addfeed_form(request.POST)
+            if form.is_valid():
+                title = str(form.cleaned_data['title'])
+                content = str(form.cleaned_data['content'])
+                category = str(form.cleaned_data['category'])
+                screenshots = str(form.cleaned_data['screenshots'])
+                tags = str(form.cleaned_data['tags'])
+                feed_id = decode_alpha(str(request.POST.get('feed_id', False)))
+                # Updating the object in feeds tables
+                feed = feeds.objects.get(id=feed_id)
+                feed.title=title
+                feed.content=content
+                feed.category=category
+                feed.sshots=screenshots
+                feed.tags=tags
+                feed.save()   
+
+                return redirect('userFeeds')
+        elif 'rejectFeed' in request.POST:
+            feed_id = decode_alpha(str(request.POST.get('feed_id', False)))
+            # Delete Object from feed_requests table
+            feeds.objects.filter(id=feed_id).delete()
+            return redirect('userFeeds')
+            
+        else:
+            return redirect('userFeeds')
+            
+
+        return render(request,'feedAddEdit.html',locals())
+
+    return render(request,'feedAddEdit.html',locals())
 

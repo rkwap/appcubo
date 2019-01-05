@@ -9,6 +9,7 @@ urlpatterns = [
     path('addfeed/search', feeds.searchApp , name='searchApp'), #render ajax_search.html
     path('feedrequests/', feeds.feedRequests , name='feedRequests'),
     path('feedrequests/review/', feeds.pendingReview , name='pendingReview'),
+    path('myfeeds/edit/', feeds.editFeed , name='editFeed'),
     path('myfeeds/', feeds.userFeeds , name='userFeeds')
 
 

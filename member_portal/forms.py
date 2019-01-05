@@ -1,5 +1,7 @@
 from django import forms
 import datetime
+# from ckeditor.widgets import CKEditorWidget
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
 class addfeed_form(forms.Form):
     title = forms.CharField(
@@ -23,7 +25,7 @@ class addfeed_form(forms.Form):
 
     content = forms.CharField(
         label='Content',
-        widget=forms.Textarea(attrs={'placeholder': 'Content', 'class' : 'form-control'}),
+        widget= CKEditorUploadingWidget(),
         required=True
         )
 

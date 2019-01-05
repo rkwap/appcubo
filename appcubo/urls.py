@@ -21,4 +21,5 @@ urlpatterns = [
     path('apps/', include('apps.urls')),
     path('', include('member_portal.urls')),
     path('api-auth/', include('rest_framework.urls')),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
 ]
