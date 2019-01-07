@@ -36,7 +36,7 @@ class searchUWP(APIView):
         data=[]
         for app in raw_ids[:1]:
             appid= app.attrs['data-id']
-            app = app_details(appid,'uwp')
+            app = app_details(request,appid,'uwp')
             print(app)
         return Response({"results": data})
 

@@ -43,7 +43,7 @@ def searchApp(request):
         store = request.POST.get('store',False)
         print (search_text)
         print(store)
-        search = search_app(search_text,store)
+        search = search_app(request,search_text,store)
         search = search[:5]
         return render(request,'ajax_search.html',locals())
     else:
@@ -102,7 +102,7 @@ def addfeed(request,store,appid_hash):
             store=store_stol(store)
             # Fetching From app data from appcubo.apps api
             # For APP details along form
-            app = app_details(appid_hash,store) # app_details function
+            app = app_details(request,appid_hash,store) # app_details function
 
             appName = app['title']
             appURL = app['appURL']
@@ -174,7 +174,7 @@ def feedRequests(request):
                     print(feed_id)
                     feed.store = store_stol(feed.store)
                     # Getting app data
-                    app = app_details(encode(feed.appid),feed.store) # app_details function
+                    app = app_details(request,encode(feed.appid),feed.store) # app_details function
                     app_data_temp = [app['title'],app['appURL'],app['publisher'],app['publisherURL'],app['price'],app['icon']]
                     app_data.append(app_data_temp)
                     # end of app data
@@ -207,7 +207,7 @@ def pendingReview(request):
                 # end of feed data
                 store = store_stol(store)
                 # Fetching From app data from appcubo.apps api
-                app = app_details(appid_hash,store)
+                app = app_details(request,appid_hash,store)
                 appName = app['title']
                 appURL = app['appURL']
                 publisher = app['publisher']
@@ -343,7 +343,7 @@ def userFeeds(request):
                 downvote_count.append(feed.downvote_count)
                 comment_count.append(feed.comment_count)
                 # Getting app data
-                app = app_details(encode(feed.appid),feed.store) # app_details function
+                app = app_details(request,encode(feed.appid),feed.store) # app_details function
 
                 app_data_temp = [app['title'],app['appURL'],app['publisher'],app['publisherURL'],app['price'],app['icon']]
                 app_data.append(app_data_temp)
@@ -374,7 +374,7 @@ def editFeed(request):
             # end of feed data
             store = store_stol(store)
             # Fetching From app data from appcubo.apps api
-            app = app_details(appid_hash,store)
+            app = app_details(request,appid_hash,store)
             appName = app['title']
             appURL = app['appURL']
             publisher = app['publisher']

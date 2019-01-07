@@ -3,8 +3,16 @@ from django.shortcuts import render, get_object_or_404,redirect
 from django.urls import reverse
 import requests
 
+def absolute(request):
+    urls = {
+        'ABSOLUTE_ROOT': request.build_absolute_uri('/')[:-1].strip("/"),
+        'ABSOLUTE_ROOT_URL': request.build_absolute_uri('/').strip("/"),
+    }
+    return urls
 
-def search_app(q,store):
+def search_app(request,q,store):
+    ABSOLUTE_ROOT_URL = absolute(request)['ABSOLUTE_ROOT_URL']
+
     if store== "android":
         search_url = reverse('playAppSearch', args=[q])
     elif store == "ios":
@@ -12,8 +20,8 @@ def search_app(q,store):
     else:
         search_url = ""
     if search_url!="":
-        search_url = "http://127.0.0.1:8000"+search_url
-
+        
+        search_url = ABSOLUTE_ROOT_URL+search_url
         search = requests.get(search_url, verify=False).json()
         # with urllib.request.urlopen(search_url) as url:
         #     search = json.loads(url.read().decode())
@@ -21,7 +29,8 @@ def search_app(q,store):
     else:
         return redirect('/dashboard')
 
-def app_details(appid,store):
+def app_details(request,appid,store):
+    ABSOLUTE_ROOT_URL = absolute(request)['ABSOLUTE_ROOT_URL']
     if store== "android":
         details_url = reverse('playAppDetails', args=[appid])
     elif store == "ios":
@@ -33,7 +42,7 @@ def app_details(appid,store):
     
     if details_url!="":
 
-        details_url = "http://127.0.0.1:8000"+details_url
+        details_url = ABSOLUTE_ROOT_URL+details_url
         app = requests.get(details_url, verify=False).json()
 
         # with urllib.request.urlopen(details_url) as url:
