@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.models import android,iOS
+from apps.models import android,iOS,UWP
 from member_portal.templatetags.encryption import encode,decode
 
 
@@ -34,4 +34,17 @@ class iOSSerializer(serializers.ModelSerializer):
             'price': iOS.price,
             'appID': iOS.appid,
             'devices': iOS.devices,
+        }
+
+class UWPSerializer(serializers.ModelSerializer):
+    def to_representation(self, UWP):
+        return {
+            'id': encode(UWP.id),
+            'title': UWP.title,
+            'appURL': UWP.app_url,
+            'publisher': UWP.publisher,
+            'publisherURL': '',
+            'icon': UWP.cover,
+            'price': UWP.price,
+            'appID': UWP.appid,
         }

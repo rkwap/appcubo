@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from apps.models import iOS
 from apps.main import app_details
-from member_portal.templatetags.encryption import encode,decode,hashids # For youtube-like encrpytion
+from member_portal.templatetags.encryption import encode,decode # For youtube-like encrpytion
 import urllib.request, json # For handaling json files
 from django.db.models import Q # Django Q objects for query
 

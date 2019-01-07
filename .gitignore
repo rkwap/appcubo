@@ -9,6 +9,7 @@ share
 pyvenv.cfg
 .venv
 venv
+*.pyc
 pip-selfcheck.json
 instance/
 config.cfg

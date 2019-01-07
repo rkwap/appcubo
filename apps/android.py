@@ -55,7 +55,7 @@ class search(APIView):
 
         q = q.replace('+',' ')
 
-        apps = android.objects.filter(title__icontains=q)
+        apps = android.objects.filter(title__icontains=q)[:5]
         # the many param informs the serializer that it will be serializing more than a single article.
         serializer = androidSerializer(apps, many=True)
         return Response({"results": serializer.data})
