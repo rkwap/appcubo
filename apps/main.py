@@ -21,7 +21,7 @@ def search_app(request,q,store):
         search_url = ""
     if search_url!="":
         
-        search_url = ABSOLUTE_ROOT_URL+search_url
+        search_url = ABSOLUTE_ROOT_URL+search_url+"?format=json"
         search = requests.get(search_url, verify=False).json()
         # with urllib.request.urlopen(search_url) as url:
         #     search = json.loads(url.read().decode())
@@ -41,8 +41,7 @@ def app_details(request,appid,store):
         details_url = ""
     
     if details_url!="":
-
-        details_url = ABSOLUTE_ROOT_URL+details_url
+        details_url = ABSOLUTE_ROOT_URL+details_url+"?format=json"
         app = requests.get(details_url, verify=False).json()
 
         # with urllib.request.urlopen(details_url) as url:
