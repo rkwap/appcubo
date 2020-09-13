@@ -4,6 +4,8 @@
 - There is a REST API that returns search results and app info from a URL endpoint to the user using Django REST Framework.<br>
 - Made for ollecting users' feedback, suggestions, and bugs reports for a specific app.<br>
 
+The web app is also hosted on heroku:- https://rkwap.herokuapp.com/
+
 ## Screenshots
 Here are some screenshots of the app demonstrating some core features.
 
