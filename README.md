@@ -4,7 +4,7 @@
 - There is a REST API that returns search results and app info from a URL endpoint to the user using Django REST Framework.<br>
 - Made for ollecting users' feedback, suggestions, and bugs reports for a specific app.<br>
 
-Some of the work in continued on this repo: https://github.com/rkwap/appdex
+Some of the work is continued on this repo: https://github.com/rkwap/appdex
 
 The web app is also hosted on heroku:- https://rkwap.herokuapp.com/
 
