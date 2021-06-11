@@ -2,7 +2,7 @@ wheel==0.32.3
 Django==2.1.5
 django-mathfilters==0.4.0
 dj-pagination==2.4.0
-djangorestframework==3.9.0
+djangorestframework==3.11.2
 django-ckeditor==5.6.1
 django-js-asset==1.1.0
 django-allauth==0.38.0
