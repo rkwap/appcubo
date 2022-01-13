@@ -11,7 +11,7 @@ beautifulsoup4==4.7.1
 bs4==0.0.1
 soupsieve==1.6.2
 hashids==1.2.0
-Pillow==5.4.1
+Pillow==9.0.0
 requests==2.18.4
 django_heroku==0.3.1
 gunicorn==19.9.0
