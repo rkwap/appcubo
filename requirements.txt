@@ -1,5 +1,5 @@
 wheel==0.32.3
-Django==2.2.24
+Django==2.2.27
 django-mathfilters==0.4.0
 dj-pagination==2.4.0
 djangorestframework==3.11.2
