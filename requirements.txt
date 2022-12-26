@@ -1,4 +1,4 @@
-wheel==0.32.3
+wheel==0.38.1
 Django==2.2.24
 django-mathfilters==0.4.0
 dj-pagination==2.4.0
